@@ -25,7 +25,7 @@ $$\\begin{aligned}
 
 1.  Clone the [course repo][]: First click on **Code** to get the
  Git address (e.g., the HTTPS address). Then use your IDE to clone (download) the repo using this address. 
- [PyCharm tutorial][].
+ [PyCharm tutorial on using Git][].
 
 2.  You will find the homework in the **Homework** folder.
 
