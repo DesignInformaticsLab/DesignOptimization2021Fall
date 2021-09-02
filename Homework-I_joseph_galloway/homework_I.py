@@ -4,7 +4,7 @@ Specify your initial guesses of the solution.
 If you change your initial guess, do you find different solutions?
 (100 points)"""
 
-import SciPy.optimize
+from scipy.optimize import minimize, rosen, rosen_der
 
 x1 = 0;
 x2 = 0;
