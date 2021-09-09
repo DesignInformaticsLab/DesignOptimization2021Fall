@@ -23,3 +23,4 @@ Course: Design Optimization (ME 598)
 
 
 ## Problem V
+(Attach sketches)
