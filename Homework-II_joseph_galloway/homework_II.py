@@ -12,12 +12,6 @@ x, y, z = sp.symbols('x y z')
 
 
 # Problem I
-<<<<<<< HEAD
-# x = x1, y = x2
-x = 0
-y = 0
-f = 2*x**2 - 4*x*y + 1.5*y**2 + y
-=======
 def partial(element, function):
     # The diff function is from the sympy library
     # It takes the derivative of the input function using...
@@ -86,15 +80,26 @@ def problem_I():
         function, hessianmat))
     print("The critical point is "
           + str(gradient_to_zero(symbols_list, partials)))
+    x = 0
+    y = 0
+    value = 2*x**2 - 4*x*y + 1.5*y**2 + y
+    print("Test point 0 = " + str(value))
+    x = 1.5
+    y = -1.5
+    value = 2*x**2 - 4*x*y + 1.5*y**2 + y
+    print("Test point 1 = " + str(value))
+    x = 2
+    y = -2
+    value = 2*x**2 - 4*x*y + 1.5*y**2 + y
+    print("Test point 2 = " + str(value))
 
     # Second half of problem I
     # Find the direction of the downslopes away from the...
     # saddle (Use Taylor's Expansion at the saddle point).
-
+    # Find directions that reduce f
 
     print("____________________")
 
->>>>>>> 081e40ce7fb02986ff44308f711c79765cbc878d
 
 # Problem II
 
@@ -124,8 +129,6 @@ def problem_IV():
 
 
 # Problem V
-<<<<<<< HEAD
-=======
 
 
 def problem_V():
@@ -144,4 +147,3 @@ def main():
 
 
 main()
->>>>>>> 081e40ce7fb02986ff44308f711c79765cbc878d
