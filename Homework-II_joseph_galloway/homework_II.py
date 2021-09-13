@@ -7,6 +7,9 @@ import numpy as np
 import sympy as sp
 from sympy import symbols, Eq, solve
 
+from mpl_toolkits import mplot3d  # Plot function to verify answers
+import matplotlib.pyplot as plt
+
 
 x, y, z = sp.symbols('x y z')
 
@@ -43,6 +46,24 @@ def hessian(partials_second, cross_derivatives):
 
     return hessianmat
 
+def taylor_series_approximation(x, y):
+    # Second half of problem I
+    # Find the direction of the downslopes away from the...
+    # saddle (Use Taylor's Expansion at the saddle point).
+    # Find directions that reduce f
+    taylor_approx = 0
+    a = 1  # Saddle Point x
+    b = 1  # Saddle Point y
+    func = 2*a**2 - 4*a*b + 1.5*b**2 + b
+    first_deriv_x = (4*a - 4*b)*(x-a)
+    first_deriv_y = (-4*a + 3*b + 1)*(y-b)
+    second_deriv_x = (4/2)*(x-a)**2
+    second_deriv_y = (3/2)*(y-b)**2
+    second_deriv_xy = (-4)*(x-a)*(y-b)
+    taylor_approx = func + first_deriv_x + first_deriv_y + second_deriv_x + second_deriv_y + second_deriv_xy
+
+    return taylor_approx
+
 
 def problem_I():
     print("Problem I")
@@ -59,6 +80,7 @@ def problem_I():
     for element in symbols_list:
         partial_diff = partial(element, function)
         partials.append(partial_diff)
+    first_derivs = partials
 
     # Calculates the second partial derivatives of the function...
     # for the diagonal Hessian Matrix
@@ -79,11 +101,42 @@ def problem_I():
     print("Hessian matrix of the function {0} = \n {1}".format(
         function, hessianmat))
     print("The critical point is "
+<<<<<<< HEAD
           + str(gradient_to_zero(symbols_list, partials)))
 
     # Second half of problem I
     # Find the direction of the downslopes away from the...
     # saddle (Use Taylor's Expansion at the saddle point).
+=======
+          + str(gradient_to_zero(symbols_list, partials)) + "\n")
+
+    # Print the taylor series expansion at the saddle point for arbitrary...
+    # points in the 2d space to determine the downslopes & upslopes.
+    # np.arange is just like range() except it can handle float steps
+    # https://pynative.com/python-range-for-float-numbers/
+    print("Downslopes of saddle")
+    for i in np.arange(-2,2.5,0.5):
+        print("f(" + str(i) + "," + str(i) + ") = " + str(taylor_series_approximation(i,i)))
+
+    print("\n")
+    print("Upslopes of saddle")
+    for i in np.arange(-2,2.5,0.5):
+        print("f(" + str(-i) + "," + str(i) + ") = " + str(taylor_series_approximation(-i,i)))
+
+    # Plot function to verify visually
+    # https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    w = np.linspace(-6, 6, 30)
+    q = np.linspace(-6, 6, 30)
+
+    X, Y = np.meshgrid(w, q)
+    z = 2*X**2 - 4*X*Y + 1.5*Y**2 + Y
+    ax.plot_surface(X, Y, z, rstride=1, cstride=1,
+                cmap='viridis', edgecolor='none')
+    ax.set_title('Surface')
+    plt.show()
+>>>>>>> 26fae082d8825edf6d814b16145c8e91bce44d1d
 
     print("____________________")
 
@@ -126,8 +179,8 @@ def problem_V():
 
 def main():
     # Comment out problems not being evaluated if desired
-    problem_I()
-    # problem_II()
+    # problem_I()
+     problem_II()
     # problem_III()
     # problem_IV()
     # problem_V()
