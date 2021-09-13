@@ -46,6 +46,7 @@ def hessian(partials_second, cross_derivatives):
 
     return hessianmat
 
+
 def taylor_series_approximation(x, y):
     # Second half of problem I
     # Find the direction of the downslopes away from the...
@@ -60,7 +61,8 @@ def taylor_series_approximation(x, y):
     second_deriv_x = (4/2)*(x-a)**2
     second_deriv_y = (3/2)*(y-b)**2
     second_deriv_xy = (-4)*(x-a)*(y-b)
-    taylor_approx = func + first_deriv_x + first_deriv_y + second_deriv_x + second_deriv_y + second_deriv_xy
+    taylor_approx = func + first_deriv_x + first_deriv_y + \
+        second_deriv_x + second_deriv_y + second_deriv_xy
 
     return taylor_approx
 
@@ -101,13 +103,6 @@ def problem_I():
     print("Hessian matrix of the function {0} = \n {1}".format(
         function, hessianmat))
     print("The critical point is "
-<<<<<<< HEAD
-          + str(gradient_to_zero(symbols_list, partials)))
-
-    # Second half of problem I
-    # Find the direction of the downslopes away from the...
-    # saddle (Use Taylor's Expansion at the saddle point).
-=======
           + str(gradient_to_zero(symbols_list, partials)) + "\n")
 
     # Print the taylor series expansion at the saddle point for arbitrary...
@@ -115,13 +110,15 @@ def problem_I():
     # np.arange is just like range() except it can handle float steps
     # https://pynative.com/python-range-for-float-numbers/
     print("Downslopes of saddle")
-    for i in np.arange(-2,2.5,0.5):
-        print("f(" + str(i) + "," + str(i) + ") = " + str(taylor_series_approximation(i,i)))
+    for i in np.arange(-2, 2.5, 0.5):
+        print("f(" + str(i) + "," + str(i) + ") = "
+              + str(taylor_series_approximation(i, i)))
 
     print("\n")
     print("Upslopes of saddle")
-    for i in np.arange(-2,2.5,0.5):
-        print("f(" + str(-i) + "," + str(i) + ") = " + str(taylor_series_approximation(-i,i)))
+    for i in np.arange(-2, 2.5, 0.5):
+        print("f(" + str(-i) + "," + str(i) + ") = "
+              + str(taylor_series_approximation(-i, i)))
 
     # Plot function to verify visually
     # https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
@@ -133,20 +130,27 @@ def problem_I():
     X, Y = np.meshgrid(w, q)
     z = 2*X**2 - 4*X*Y + 1.5*Y**2 + Y
     ax.plot_surface(X, Y, z, rstride=1, cstride=1,
-                cmap='viridis', edgecolor='none')
+                    cmap='viridis', edgecolor='none')
     ax.set_title('Surface')
     plt.show()
->>>>>>> 26fae082d8825edf6d814b16145c8e91bce44d1d
 
     print("____________________")
 
 
 # Problem II
+def gradient_descent():
+    pass
+
+
+# Newton algorithm
+def newton():
+    pass
 
 
 def problem_II():
     pass
     print("Problem II")
+
     print("____________________")
 
 
@@ -180,7 +184,7 @@ def problem_V():
 def main():
     # Comment out problems not being evaluated if desired
     # problem_I()
-     problem_II()
+    problem_II()
     # problem_III()
     # problem_IV()
     # problem_V()
