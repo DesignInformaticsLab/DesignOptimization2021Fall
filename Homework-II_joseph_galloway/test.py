@@ -1,5 +1,7 @@
 # Problem II
 
+# Plane x + 2*y + 3*z = 1
+
 # Normal vector
 nx = 1
 ny = 2
@@ -27,6 +29,7 @@ def gradient_descent():
 
     # Calculate distance between a point on plane and point P
     # This will be the cost function
+    dist = 
 
     for i in range(10):
         # Steps toward optimal solution
