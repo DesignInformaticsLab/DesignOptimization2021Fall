@@ -101,13 +101,6 @@ def problem_I():
     print("Hessian matrix of the function {0} = \n {1}".format(
         function, hessianmat))
     print("The critical point is "
-<<<<<<< HEAD
-          + str(gradient_to_zero(symbols_list, partials)))
-
-    # Second half of problem I
-    # Find the direction of the downslopes away from the...
-    # saddle (Use Taylor's Expansion at the saddle point).
-=======
           + str(gradient_to_zero(symbols_list, partials)) + "\n")
 
     # Print the taylor series expansion at the saddle point for arbitrary...
@@ -136,7 +129,6 @@ def problem_I():
                 cmap='viridis', edgecolor='none')
     ax.set_title('Surface')
     plt.show()
->>>>>>> 26fae082d8825edf6d814b16145c8e91bce44d1d
 
     print("____________________")
 
