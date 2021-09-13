@@ -85,7 +85,6 @@ def problem_I():
     # Find the direction of the downslopes away from the...
     # saddle (Use Taylor's Expansion at the saddle point).
 
-
     print("____________________")
 
 
