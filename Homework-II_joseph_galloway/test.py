@@ -1,7 +1,5 @@
 # Problem II
 
-# Plane x + 2*y + 3*z = 1
-
 # Normal vector
 nx = 1
 ny = 2
@@ -14,6 +12,8 @@ py = 0
 pz = 1
 
 # Gradient descent
+
+
 def gradient_descent():
     # Approach problem by solving for the shortest distance between point P and
     # a point on the plane. Create an algorithm that minimizes the distance
@@ -29,7 +29,6 @@ def gradient_descent():
 
     # Calculate distance between a point on plane and point P
     # This will be the cost function
-    dist = 
 
     for i in range(10):
         # Steps toward optimal solution
