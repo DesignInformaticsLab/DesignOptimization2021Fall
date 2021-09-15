@@ -154,40 +154,10 @@ def problem_II():
     print("____________________")
 
 
-# Problem III
-
-
-def problem_III():
-    pass
-    print("Problem III")
-    print("____________________")
-
-
-# Problem IV
-
-
-def problem_IV():
-    pass
-    print("Problem IV")
-    print("____________________")
-
-
-# Problem V
-
-
-def problem_V():
-    pass
-    print("Problem V")
-    print("____________________")
-
-
 def main():
     # Comment out problems not being evaluated if desired
     # problem_I()
     problem_II()
-    # problem_III()
-    # problem_IV()
-    # problem_V()
 
 
 main()

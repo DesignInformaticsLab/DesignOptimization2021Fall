@@ -15,24 +15,12 @@ pz = 1
 
 
 def gradient_descent():
-    # Approach problem by solving for the shortest distance between point P and
-    # a point on the plane. Create an algorithm that minimizes the distance
-    # between the points P and G (G must be a point in the plane).
-    # Goal: Find the (x, y, z) coordinates that correspond to the minimum of
-    # the cost function
-
-    # Equation: b = a - gamma*gradient
-    # b is next point, a is current point, gamma is step size, gradient is
-    # the gradient of the cost function
-
-    # Begin with an initial point guess
-
-    # Calculate distance between a point on plane and point P
-    # This will be the cost function
-
-    for i in range(10):
-        # Steps toward optimal solution
-        pass
+    # Create test case first....
+    # g is the tolerance
+    # x(k+1) = x(k) - g(k)
+    # min. x    f(x) = x^4 - 2*x^2*y + y^2
+    # w/ x0 = (1.1, 1)^T
+    pass
 
 
 gradient_descent()
