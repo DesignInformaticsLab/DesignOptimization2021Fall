@@ -1,13 +1,16 @@
 # sample code for Problem 2
 
-obj = lambda x: (x - 1)**2
-grad = lambda x: 2*(x - 1)
+def obj(x): return (x - 1)**2
+def grad(x): return 2*(x - 1)
+
+
 eps = 1e-3  # termination criterion
 x0 = 0  # initial guess
 k = 0  # counter
 soln = [x0]  # use an array to store the search steps
 x = soln[k]  # start with the initial guess
-error = abs(grad(x))  # compute the error. Note you will need to compute the norm for 2D grads, rather than the absolute value
+# compute the error. Note you will need to compute the norm for 2D grads, rather than the absolute value
+error = abs(grad(x))
 a = 0.01  # set a fixed step size to start with
 
 # Armijo line search
