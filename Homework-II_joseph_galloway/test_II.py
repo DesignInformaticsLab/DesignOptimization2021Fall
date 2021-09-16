@@ -1,6 +1,8 @@
 import sympy as sym
 from numpy import linalg as la
 import numpy as np
+import matplotlib.pyplot as plt
+import math
 
 x, y = sym.symbols('x y')
 eps = 1e-3  # Termination criterion
@@ -11,7 +13,7 @@ k = 0  # Counter
 # where x is x2
 # and y is x3
 # x1 is solved at the end when x2 and x3 are solved
-function = (1 - 2*x - 3*y + 1)**2 + x**2 + (y - 1)**2
+def function(x, y): return (1 - 2*x - 3*y + 1)**2 + x**2 + (y - 1)**2
 def partial_x(x, y): return 10*x + 12*y - 8
 def partial_y(x, y): return 12*x + 20*y - 14
 
@@ -42,3 +44,14 @@ soln = [solution_x1, solution_x[k], solution_y[k]]
 print(soln)
 # print(k)
 # This solution matches what I calculated in part I of this problem.
+
+# Plot log-linear convergence plot
+f = function(solution_x[0], solution_y[0])
+f_star = function(solution_x[k], solution_y[k])
+
+for i in range(k):
+    plt.plot(i, math.log(abs(function(solution_x[i], solution_y[i]) - f_star)), 'ro')
+plt.ylabel('log(|f-f*|)')
+plt.xlabel('Iterations (k)')
+plt.title('Gradient Descent')
+plt.show()
