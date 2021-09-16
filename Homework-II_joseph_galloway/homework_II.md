@@ -1,8 +1,8 @@
 # **Homework II**
 
 Author: Joseph D. Galloway II
-Course: Design Optimization (ME 598)  
-*[Google Colab Notebook](wwww.google.com)*
+Course: Design Optimization (ME 598)
+*[Google Colab Notebook](https://colab.research.google.com/drive/1BcsgJ80093zMR7ex4XRy3WZQRvrwDq8G?usp=sharing)*
 
 
 
