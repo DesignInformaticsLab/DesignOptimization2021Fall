@@ -19,5 +19,13 @@ solution_x = [initial_guess[0]]
 solution_y = [initial_guess[1]]
 
 a = 0.01
+# Calculate error using the norm of the derivative
+error = 0
 
-# while
+while error >= eps:  # keep searching while gradient norm is larger than eps
+    # a = line_search(x)
+    x = x - a*grad(x)
+    soln.append(x)
+    error = abs(grad(x))
+
+print(soln)
