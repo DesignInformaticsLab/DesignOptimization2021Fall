@@ -1,8 +1,8 @@
 # **Homework II**
 
-Author: Joseph D. Galloway II  
-Course: Design Optimization (ME 598)  
-*[Google Colab Notebook](wwww.google.com)*
+Author: Joseph D. Galloway II
+Course: Design Optimization (ME 598)
+*[Google Colab Notebook](https://colab.research.google.com/drive/1BcsgJ80093zMR7ex4XRy3WZQRvrwDq8G?usp=sharing)*
 
 
 
@@ -17,8 +17,10 @@ Course: Design Optimization (ME 598)
 ## Problem II
 ![Part_I](Images/problemII.png)
 ![Part_I](Images/problemII_I.png)
-
-
+![Part_I](Images/problemII_gradient.png)
+![Part_I](Images/problemII_gradient_II.png)
+![Part_I](Images/problemII_newton.png)
+![Part_I](Images/problemII_newton_II.png)
 
 
 ## Problem III

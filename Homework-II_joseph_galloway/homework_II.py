@@ -6,6 +6,9 @@
 import numpy as np
 import sympy as sp
 from sympy import symbols, Eq, solve
+from numpy import linalg as la
+from numpy.linalg import inv
+import math
 
 from mpl_toolkits import mplot3d  # Plot function to verify answers
 import matplotlib.pyplot as plt
@@ -139,24 +142,130 @@ def problem_I():
 
 # Problem II
 def gradient_descent():
-    pass
+    x, y = sp.symbols('x y')
+    eps = 1e-3  # Termination criterion
+    k = 0  # Counter
+
+    # Function comes from the following equation:
+    # min. (1 - 2x - 3y + 1)^2 + x^2 + (y - 1)^2
+    # where x is x2
+    # and y is x3
+    # x1 is solved at the end when x2 and x3 are solved
+    def function(x, y): return (1 - 2*x - 3*y + 1)**2 + x**2 + (y - 1)**2
+    def partial_x(x, y): return 10*x + 12*y - 8
+    def partial_y(x, y): return 12*x + 20*y - 14
+
+    solution_x = [5]  # Initial guess x
+    solution_y = [-7]  # Initial guess y
+    # Calculate gradient using initial guesses to calculate initial error
+    gradient = [partial_x(solution_x[0], solution_y[0]), partial_y(solution_x[0], solution_y[0])]
+
+    # Calculate the norm of the 2D gradient at the initial guesses
+    error = la.norm(gradient)
+
+
+    a = 0.05
+    while error >= eps:
+        # Calculate next step using gradient descent algorithm
+        solution_x.append(solution_x[k] - a*partial_x(solution_x[k], solution_y[k]))
+        solution_y.append(solution_y[k] - a*partial_y(solution_x[k], solution_y[k]))
+
+        # Update gradient norm and calculate new error using new x,y position
+        gradient = [partial_x(solution_x[k], solution_y[k]), partial_y(solution_x[k], solution_y[k])]
+        error = la.norm(gradient)
+        k += 1  # Increase counter
+
+    # Solution for x1 now that x2 and x3 are solved for
+    solution_x1 = 1 - 2*solution_x[k] - 3*solution_y[k]
+
+    soln = [solution_x1, solution_x[k], solution_y[k]]
+    print("Gradient Descent = " + str(soln))
+    # print(k)
+    # This solution matches what I calculated in part I of this problem.
+
+    # Plot log-linear convergence plot
+    f = function(solution_x[0], solution_y[0])
+    f_star = function(solution_x[k], solution_y[k])
+
+    for i in range(k):
+        plt.plot(i, math.log(abs(function(solution_x[i], solution_y[i]) - f_star)), 'ro')
+    plt.ylabel('log(|f-f*|)')
+    plt.xlabel('Iterations (k)')
+    plt.title('Gradient Descent')
+    plt.show()
 
 
 # Newton algorithm
 def newton():
-    pass
+    x, y = sp.symbols('x y')
+    eps = 1e-3  # Termination criterion
+    k = 0  # Counter
+
+    # Function comes from the following equation:
+    # min. (1 - 2x - 3y + 1)^2 + x^2 + (y - 1)^2
+    # where x is x2
+    # and y is x3
+    # x1 is solved at the end when x2 and x3 are solved
+    def function(x, y): return (1 - 2*x - 3*y + 1)**2 + x**2 + (y - 1)**2
+    def partial_x(x, y): return 10*x + 12*y - 8
+    def partial_y(x, y): return 12*x + 20*y - 14
+    second_partial_xx = 10
+    second_partial_yy = 20
+    second_partial_xy = 12
+    H = [[second_partial_xx, second_partial_xy], [second_partial_xy, second_partial_yy]]
+
+    solution_x = [0]  # Initial guess x
+    solution_y = [0]  # Initial guess y
+    # Calculate gradient using initial guesses to calculate initial error
+    gradient = [partial_x(solution_x[0], solution_y[0]), partial_y(solution_x[0], solution_y[0])]
+
+    # Calculate the norm of the 2D gradient at the initial guesses
+    error = la.norm(gradient)
+
+
+    a = 0.05
+    while error >= eps:
+        # Calculate next step using Newton's algorithm
+        # The xx portion of the inverse hessian was used for x and
+        # the yy portion of the inverse hessian was used for y
+        solution_x.append(solution_x[k] - a*(inv(H)[0][0])*partial_x(solution_x[k], solution_y[k]))
+        solution_y.append(solution_y[k] - a*(inv(H)[1][1])*partial_y(solution_x[k], solution_y[k]))
+
+        # Update gradient norm and calculate new error using new x,y position
+        gradient = [partial_x(solution_x[k], solution_y[k]), partial_y(solution_x[k], solution_y[k])]
+        error = la.norm(gradient)
+        k += 1  # Increase counter
+
+    # Solution for x1 now that x2 and x3 are solved for
+    solution_x1 = 1 - 2*solution_x[k] - 3*solution_y[k]
+
+    soln = [solution_x1, solution_x[k], solution_y[k]]
+    print("Newton's Method = " + str(soln))
+    # print(k)
+    # This solution matches what I calculated in part I of this problem.
+
+    # Plot log-linear convergence plot
+    f = function(solution_x[0], solution_y[0])
+    f_star = function(solution_x[k], solution_y[k])
+
+    for i in range(k):
+        plt.plot(i, math.log(abs(function(solution_x[i], solution_y[i]) - f_star)), 'ro')
+    plt.ylabel('log(|f-f*|)')
+    plt.xlabel('Iterations (k)')
+    plt.title('Newton\'s Method')
+    plt.show()
 
 
 def problem_II():
-    pass
     print("Problem II")
-
+    gradient_descent()
+    newton()
     print("____________________")
 
 
 def main():
-    # Comment out problems not being evaluated if desired
-    # problem_I()
+    # Please comment out problems not being evaluated if desired
+    problem_I()
     problem_II()
 
 
