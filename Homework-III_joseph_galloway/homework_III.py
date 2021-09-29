@@ -1,6 +1,7 @@
 # Homework III
 from math import exp
 import matplotlib.pyplot as plt
+from sympy import symbols, diff
 
 
 def problem_I():
@@ -28,12 +29,9 @@ def problem_I():
     # plt.plot(x1, p)
     # plt.show()
 
-    #Initial guesses
+    # Initial guesses
     A12 = 0
     A21 = 0
-
-    # Refer to notes about using matrices to solve
-
 
 
 def problem_II():
@@ -43,5 +41,6 @@ def problem_II():
 def main():
     problem_I()
     # problemII()
+
 
 main()
