@@ -174,7 +174,7 @@ def gradient_descent():
         gradient = [partial_x(solution_x[k], solution_y[k]), partial_y(solution_x[k], solution_y[k])]
         error = la.norm(gradient)
         k += 1  # Increase counter
-
+    # print(k)
     # Solution for x1 now that x2 and x3 are solved for
     solution_x1 = 1 - 2*solution_x[k] - 3*solution_y[k]
 
@@ -265,7 +265,7 @@ def problem_II():
 
 def main():
     # Please comment out problems not being evaluated if desired
-    problem_I()
+    # problem_I()
     problem_II()
 
 

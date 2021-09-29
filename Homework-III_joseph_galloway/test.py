@@ -60,16 +60,20 @@ def problem_I():
     a = 0.05  # Learning rate
     k = 0  # Counter
     eps = 10**-3  # Acceptable error
-    merp_A = 0  # Represents gradient w.r.t. A
-    merp_B = 0  # Represents gradient w.r.t. B
     """while error > eps:
-        A.append(A[k] - a*merp_A)
-        B.append(B[k] - a*merp_B)
+        # Each calculation is using x[k]
+        A.append(A[k] - a*merp_A)  # Previous A - (learning rate)*partial_A
+        B.append(B[k] - a*merp_B)  # Previous B - (learning rate)*partial_B
 
-        # Calculate new gradient
-        # Calculate new error
+        # Calculate new gradient using updated parameters A[k+1] & B[k+1]
+        # Calculate new p
+        # x1[i]*exp(A*(B*x2[i]/(A*x1[i]+B*x2[i]))**2)*pw + x2[i]*exp(B*(A*x1[i]/(A*x1[i] + B*x2[i]))**2)*pd
 
-        k += 1"""
+        # Calculate new error using new p and corresponding p_measured
+        # error = -1*(p_measured[i] - p[i])**2
+
+        k += 1
+        """
 
 
 def problem_II():
