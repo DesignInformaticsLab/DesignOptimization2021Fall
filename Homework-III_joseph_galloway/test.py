@@ -2,6 +2,8 @@
 from math import exp
 import matplotlib.pyplot as plt
 from sympy import symbols, diff
+import sympy as sym
+from numpy import linalg as la
 
 
 def problem_I():
@@ -32,12 +34,11 @@ def problem_I():
         x2.append(round(1 - x1[i], 2))
     p = []
     error = []
-    # plt.plot(x1, p)
-    # plt.show()
-
     # Initial guesses
     A = [1.0]
     B = [1.0]
+    # plt.plot(x1, p)
+    # plt.show()
 
     # Calculate p with initial guess parameters
     for i in range(len(x1)):
@@ -51,33 +52,40 @@ def problem_I():
                  + x2[i]*exp(B*(A*x1[i]/(A*x1[i] + B*x2[i]))**2)*pd)
         error.append(-1*(p_measured[i] - p[i])**2)
 
-        # Calculate graident of function given x1[i] and x2[i]
+    def partial_A(A, B): return 17.4732520845971*(-2*A*B**2/(A + B)**3 + B**2/(A + B)**2)*sym.exp(A*B
+                                                                                                  ** 2/(A + B)**2) + 28.8240995274052*(-2*A**2*B/(A + B)**3 + 2*A*B/(A + B)**2)*sym.exp(A**2*B/(A + B)**2)
 
-    # plt.plot(x1, error)
-    # plt.show()
+    def partial_B(A, B): return 17.4732520845971*(-2*A*B**2/(A + B)**3 + 2*A*B/(A + B)**2)*sym.exp(A*B
+                                                                                                   ** 2/(A + B)**2) + 28.8240995274052*(-2*A**2*B/(A + B)**3 + A**2/(A + B)**2)*sym.exp(A**2*B/(A + B)**2)
 
     # Gradient Descent
     a = 0.05  # Learning rate
     k = 0  # Counter
     eps = 10**-3  # Acceptable error
-    """while error > eps:
-        # Each calculation is using x[k]
-        A.append(A[k] - a*merp_A)  # Previous A - (learning rate)*partial_A
-        B.append(B[k] - a*merp_B)  # Previous B - (learning rate)*partial_B
+    # Calculate initial gradient and error using initial guess
+    gradient = [partial_A(A[0], B[0]), partial_B(A[0], B[0])]
+    error = la.norm(gradient)
+    print(error)
 
-        # Calculate new gradient using updated parameters A[k+1] & B[k+1]
+    while error > eps:
+        # Update A and B
+        A.append(A[k] - a*partial_A(A[k], B[k]))
+        B.append(B[k] - a*partial_B(A[k], B[k]))
+
+        # Update gradient using updated parameters
+        gradient = [partial_A(A[k], B[k]), partial_B(A[k], B[k])]
+        error = la.norm(gradient)
+
         # Calculate new p
         # x1[i]*exp(A*(B*x2[i]/(A*x1[i]+B*x2[i]))**2)*pw + x2[i]*exp(B*(A*x1[i]/(A*x1[i] + B*x2[i]))**2)*pd
 
         # Calculate new error using new p and corresponding p_measured
-        # error = -1*(p_measured[i] - p[i])**2
-
+        error = (p_measured[i] - p[i])**2
         k += 1
-        """
+        print(k)
 
-
-def problem_II():
-    pass
+    def problem_II():
+        pass
 
 
 def main():
