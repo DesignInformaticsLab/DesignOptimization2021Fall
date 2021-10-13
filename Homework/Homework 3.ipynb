@@ -1,0 +1,203 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "harmful-logging",
+   "metadata": {},
+   "source": [
+    "### Problem 1 (50 points) \n",
+    "\n",
+    "Vapor-liquid equilibria data are correlated using two adjustable parameters $A_{12}$ and $A_{21}$ per binary\n",
+    "mixture. For low pressures, the equilibrium relation can be formulated as:\n",
+    "\n",
+    "$$\n",
+    "\\begin{aligned}\n",
+    "p = & x_1\\exp\\left(A_{12}\\left(\\frac{A_{21}x_2}{A_{12}x_1+A_{21}x_2}\\right)^2\\right)p_{water}^{sat}\\\\\n",
+    "& + x_2\\exp\\left(A_{21}\\left(\\frac{A_{12}x_1}{A_{12}x_1+A_{21}x_2}\\right)^2\\right)p_{1,4 dioxane}^{sat}.\n",
+    "\\end{aligned}\n",
+    "$$\n",
+    "\n",
+    "Here the saturation pressures are given by the Antoine equation\n",
+    "\n",
+    "$$\n",
+    "\\log_{10}(p^{sat}) = a_1 - \\frac{a_2}{T + a_3},\n",
+    "$$\n",
+    "\n",
+    "where $T = 20$($^{\\circ}{\\rm C}$) and $a_{1,2,3}$ for a water - 1,4 dioxane\n",
+    "system is given below.\n",
+    "\n",
+    "|             | $a_1$     | $a_2$      | $a_3$     |\n",
+    "|:------------|:--------|:---------|:--------|\n",
+    "| Water       | 8.07131 | 1730.63  | 233.426 |\n",
+    "| 1,4 dioxane | 7.43155 | 1554.679 | 240.337 |\n",
+    "\n",
+    "\n",
+    "The following table lists the measured data. Recall that in a binary system $x_1 + x_2 = 1$.\n",
+    "\n",
+    "|$x_1$ | 0.0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | 1.0 |\n",
+    "|:-----|:--------|:---------|:--------|:-----|:-----|:-----|:-----|:-----|:-----|:-----|:-----|\n",
+    "|$p$| 28.1 | 34.4 | 36.7 | 36.9 | 36.8 | 36.7 | 36.5 | 35.4 | 32.9 | 27.7 | 17.5 |\n",
+    "\n",
+    "Estimate $A_{12}$ and $A_{21}$ using data from the above table: \n",
+    "\n",
+    "1. Formulate the least square problem; \n",
+    "2. Since the model is nonlinear, the problem does not have an analytical solution. Therefore, solve it using the gradient descent or Newton's method implemented in HW1; \n",
+    "3. Compare your optimized model with the data. Does your model fit well with the data?\n",
+    "\n",
+    "---\n",
+    "\n",
+    "### Problem 2 (50 points) \n",
+    "\n",
+    "Solve the following problem using Bayesian Optimization:\n",
+    "$$\n",
+    "    \\min_{x_1, x_2} \\quad \\left(4-2.1x_1^2 + \\frac{x_1^4}{3}\\right)x_1^2 + x_1x_2 + \\left(-4 + 4x_2^2\\right)x_2^2,\n",
+    "$$\n",
+    "for $x_1 \\in [-3,3]$ and $x_2 \\in [-2,2]$. A tutorial on Bayesian Optimization can be found [here](https://thuijskens.github.io/2016/12/29/bayesian-optimisation/).\n",
+    "\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "id": "divine-setup",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([ 0., -4.], dtype=float32)"
+      ]
+     },
+     "execution_count": 41,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# A simple example of using PyTorch for gradient descent\n",
+    "\n",
+    "import torch as t\n",
+    "from torch.autograd import Variable\n",
+    "\n",
+    "# Define a variable, make sure requires_grad=True so that PyTorch can take gradient with respect to this variable\n",
+    "x = Variable(t.tensor([1.0, 0.0]), requires_grad=True)\n",
+    "\n",
+    "# Define a loss\n",
+    "loss = (x[0] - 1)**2 + (x[1] - 2)**2\n",
+    "\n",
+    "# Take gradient\n",
+    "loss.backward()\n",
+    "\n",
+    "# Check the gradient. numpy() turns the variable from a PyTorch tensor to a numpy array.\n",
+    "x.grad.numpy()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "id": "positive-starter",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([ 2., -6.], dtype=float32)"
+      ]
+     },
+     "execution_count": 42,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Let's examine the gradient at a different x.\n",
+    "x.data = t.tensor([2.0, 1.0])\n",
+    "loss = (x[0] - 1)**2 + (x[1] - 2)**2\n",
+    "loss.backward()\n",
+    "x.grad.numpy()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "id": "infectious-remark",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[1.        1.9999971]\n",
+      "8.185452e-12\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Here is a code for gradient descent without line search\n",
+    "\n",
+    "import torch as t\n",
+    "from torch.autograd import Variable\n",
+    "\n",
+    "x = Variable(t.tensor([1.0, 0.0]), requires_grad=True)\n",
+    "\n",
+    "# Fix the step size\n",
+    "a = 0.01\n",
+    "\n",
+    "# Start gradient descent\n",
+    "for i in range(1000):  # TODO: change the termination criterion\n",
+    "    loss = (x[0] - 1)**2 + (x[1] - 2)**2\n",
+    "    loss.backward()\n",
+    "    \n",
+    "    # no_grad() specifies that the operations within this context are not part of the computational graph, i.e., we don't need the gradient descent algorithm itself to be differentiable with respect to x\n",
+    "    with t.no_grad():\n",
+    "        x -= a * x.grad\n",
+    "        \n",
+    "        # need to clear the gradient at every step, or otherwise it will accumulate...\n",
+    "        x.grad.zero_()\n",
+    "        \n",
+    "print(x.data.numpy())\n",
+    "print(loss.data.numpy())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "id": "painful-climb",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "C:\\Users\\yren32\\AppData\\Local\\Continuum\\anaconda3\\lib\\site-packages\\ipykernel_launcher.py:1: UserWarning: The .grad attribute of a Tensor that is not a leaf Tensor is being accessed. Its .grad attribute won't be populated during autograd.backward(). If you indeed want the gradient for a non-leaf Tensor, use .retain_grad() on the non-leaf Tensor. If you access the non-leaf Tensor by mistake, make sure you access the leaf Tensor instead. See github.com/pytorch/pytorch/pull/30531 for more informations.\n",
+      "  \"\"\"Entry point for launching an IPython kernel.\n"
+     ]
+    }
+   ],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
