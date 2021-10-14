@@ -3,8 +3,11 @@ import sklearn.gaussian_process as gp
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import minimize
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('tkAgg')
+from matplotlib import pyplot as plt
 
+from mpl_toolkits import mplot3d
 
 def objective(x, mean = 0, var = 0.1):
     '''
@@ -13,7 +16,7 @@ def objective(x, mean = 0, var = 0.1):
     var : scalar variance for iid noise term
     '''
     noise = np.random.normal(mean, var)    
-    return ((4 - (2.1*(x[0]**2)) + ((x[0]**4)/3))*(x[0]**2)) + (x[0]*x[1]) + ((-4 + 4*x[1]**2)*x[1]**2) + noise
+    return ((4 - (2.1*(x[0]**2)) + ((x[0]**4)/3))*(x[0]**2)) + (x[0]*x[1]) + ((-4 + 4*x[1]**2)*x[1]**2)
 
 
 
@@ -31,7 +34,8 @@ def expected_improvement(X_, X, model, k = 0.01):
     return X_[np.argmax(ei)]
 
 
-
+# optimize the expected improvement
+# EI function is highly non linear
 
 x1 = np.random.uniform(-3,3,5)
 x2 = np.random.uniform(-2,2,5)
@@ -44,15 +48,31 @@ model = gp.GaussianProcessRegressor(kernel=kernel,
                                     n_restarts_optimizer=0,
                                     normalize_y=True)
 
-n_iters = 10
+
+x_bnds = np.linspace(-3,3, 50)
+y_bnds = np.linspace(-2, 2, 50)
+x__, y__ = np.meshgrid(x_bnds, y_bnds)
+z__ = objective(x__,y__)
+
+n_iters = 100
 k = 0.01
 for i in range(n_iters):
     model.fit(X,Y)
     # Select next point using expected improvement
-    x1 = np.random.uniform(-3,3,5)
-    x2 = np.random.uniform(-2,2,5)
+    x1 = np.random.uniform(-3,3,1000)
+    x2 = np.random.uniform(-2,2,1000)
     X_ = np.asarray([[x1],[x2]]).transpose().squeeze(1)
     x_next = expected_improvement(X_ = X_, X = X, model = model)
     y_next = objective(x_next)
-    X.stack(x_next)
-    Y.append(y_next)
+    X = np.vstack((X, x_next))
+    Y = np.append(Y, y_next)
+
+x1_bnds = np.linspace(-3,3, 50)
+x2_bnds = np.linspace(-2, 2, 50)
+x__ = np.asarray([[x1_bnds],[x2_bnds]]).transpose().squeeze(1)
+y__ = np.asarray([objective(x) for x in x__])
+
+fig = plt.figure(figsize = (10, 7))
+ax = plt.axes(projection ="3d")
+ax.scatter3D(X[:,0], X[:,1], Y, color = "green")
+ax.scatter3D(x1_bnds, x2_bnds, y__, color='blue')
