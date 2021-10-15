@@ -3,7 +3,6 @@ from math import exp
 import matplotlib.pyplot as plt
 import torch as t
 from torch.autograd import Variable
-from skopt import gp_minimize
 import numpy as np
 from bayes_opt import BayesianOptimization
 # The BayesianOptimization library can be found here https://github.com/fmfn/BayesianOptimization
@@ -97,11 +96,11 @@ def problem_II():
 
 
     optimizer.maximize(
-        init_points=5,
-        n_iter=100,
+        init_points=5,  # Steps for random exploration
+        n_iter=100,  # Iterations of bayesian optimization
     )
 
-    print(optimizer.max)
+    print(optimizer.max)  # Print the best combination of parameters to get maximum
 
 
 def main():
