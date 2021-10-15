@@ -8,6 +8,7 @@ from torch.autograd import Variable
 def problem_I():
     # Equilibrium Relation (A12 and A21 are the unknowns)
     # p = x1*exp(A12*(A21*x2/(A12*x1+A21*x2))**2)*pw + x2*exp(A21*(A12*x1/(A12*x1 + A21*x2))**2)*pd
+    # p = x1*t.exp(g[0]*(g[1]*x2/(g[0]*x1+g[1]*x2))**2)*pw + x2*t.exp(g[1]*(g[0]*x1/(g[0]*x1 + g[1]*x2))**2)*pd
     # Use gradient descent to calculate A12 and A21 given the measured data
 
     # Antoine Equation
@@ -34,13 +35,15 @@ def problem_I():
     g = Variable(t.tensor([1.0, 0.0]), requires_grad=True)
 
     # Fix the step size
-    a = 0.01
+    a = 0.001
 
-    # p = x1*t.exp(g[0]*(g[1]*x2/(g[0]*x1+g[1]*x2))**2)*pw + x2*t.exp(g[1]*(g[0]*x1/(g[0]*x1 + g[1]*x2))**2)*pd
+    # Acceptable error
+    error = 10**-10
+    loss = 1
 
     # Start gradient descent
     # Termination Criterion: If norm of gradient is larger than a certain error, then continue...
-    for i in range(1000):  # TODO: change the termination criterion
+    while loss > error:  # TODO: change the termination criterion
         p = x1[1]*t.exp(g[0]*(g[1]*x2[1]/(g[0]*x1[1]+g[1]*x2[1]))**2)*pw + x2[1]*t.exp(g[1]*(g[0]*x1[1]/(g[0]*x1[1] + g[1]*x2[1]))**2)*pd
         loss = (p_measured[1] - p)**2
         loss.backward()
@@ -55,6 +58,7 @@ def problem_I():
     print(g.data.numpy())
     print(loss.data.numpy())
 
+    # Obtained optimized values fro A_12 and A_21
     A_12 = g.data.numpy()[0]
     A_21 = g.data.numpy()[1]
 
@@ -64,12 +68,15 @@ def problem_I():
     for i in range(len(x1)):
         p_opt.append(x1[i]*exp(A_12*(A_21*x2[i]/(A_12*x1[i]+A_21*x2[i]))**2)*pw + x2[i]*exp(A_21*(A_12*x1[i]/(A_12*x1[i] + A_21*x2[i]))**2)*pd)
 
-
+    print(p_measured)
+    print(p_opt)
     plt.scatter(x1, p_measured)
     plt.scatter(x1, p_opt)
-    plt.ylabel('p')
+    plt.ylabel('pressure')
     plt.xlabel('x1')
+    plt.legend(['p_measured', 'p_optimized'])
     plt.show()
+
 
 
 def problem_II():
@@ -77,8 +84,8 @@ def problem_II():
 
 
 def main():
-    problem_I()
-    # problemII()
+    #problem_I()
+    problem_II()
 
 
 main()
