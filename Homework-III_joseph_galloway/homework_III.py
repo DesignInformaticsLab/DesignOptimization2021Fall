@@ -3,7 +3,10 @@ from math import exp
 import matplotlib.pyplot as plt
 import torch as t
 from torch.autograd import Variable
-
+from skopt import gp_minimize
+import numpy as np
+from bayes_opt import BayesianOptimization
+# The BayesianOptimization library can be found here https://github.com/fmfn/BayesianOptimization
 
 def problem_I():
     # Equilibrium Relation (A12 and A21 are the unknowns)
@@ -80,11 +83,29 @@ def problem_I():
 
 
 def problem_II():
-    pass
+    def function(x, y):
+        return -((4 - 2.1*x**2 + x**4/3)*x**2 + x*y + (-4 + 4*y**2)*y**2)
+
+    # Bounded region of parameter space
+    pbounds = {'x': (-3, 3), 'y': (-2, 2)}
+
+    optimizer = BayesianOptimization(
+        f=function,
+        pbounds=pbounds,
+        random_state=1,
+    )
+
+
+    optimizer.maximize(
+        init_points=5,
+        n_iter=100,
+    )
+
+    print(optimizer.max)
 
 
 def main():
-    #problem_I()
+    problem_I()
     problem_II()
 
 
