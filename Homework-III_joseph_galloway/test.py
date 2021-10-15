@@ -1,96 +1,77 @@
-# Homework III
-from math import exp
-import matplotlib.pyplot as plt
-from sympy import symbols, diff
-import sympy as sym
-from numpy import linalg as la
+# A simple example of using PyTorch for gradient descent
+import torch as t
+from torch.autograd import Variable
+
+"""
+# Define a variable, make sure requires_grad=True so that PyTorch can take gradient with respect to this variable
+# Initial guesses
+x = Variable(t.tensor([1.0, 0.0]), requires_grad=True)
+
+# Define a loss
+# REPLACE with function trying to minimize (See notes)
+loss = (x[0] - 1)**2 + (x[1] - 2)**2
+
+# Take gradient
+loss.backward()
+
+# Check the gradient. numpy() turns the variable from a PyTorch tensor to a numpy array.
+# Provides gradient
+x.grad.numpy()
 
 
-def problem_I():
-    # Equilibrium Relation (A12 and A21 are the unknowns)
-    # p = x1*exp(A12*(A21*x2/(A12*x1+A21*x2))**2)*pw + x2*exp(A21*(A12*x1/(A12*x1 + A21*x2))**2)*pd
-    # Use gradient descent to calculate A12 and A21 given the measured data
-    # A = A12
-    # B = A21
-    # A, B = symbols('A B', real=True)
 
-    # Antoine Equation
-    T = 20
-    a1_w = 8.07131
-    a2_w = 1730.63
-    a3_w = 233.426
-    a1_d = 7.43155
-    a2_d = 1554.679
-    a3_d = 240.337
-    pw = 10**(a1_w - (a2_w/(T+a3_w)))
-    pd = 10**(a1_d - (a2_d/(T+a3_d)))
+# Let's examine the gradient at a different x.
+x.data = t.tensor([2.0, 1.0])
+loss = (x[0] - 1)**2 + (x[1] - 2)**2
+print(type(loss))
+loss.backward()
+x.grad.numpy()
+"""
 
-    # Measured Data
-    x1 = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    p_measured = [28.1, 34.4, 36.7, 36.9, 36.8,
-                  36.7, 36.5, 35.4, 32.9, 27.7, 17.5]
-    x2 = []
-    for i in range(len(x1)):
-        x2.append(round(1 - x1[i], 2))
-    p = []
-    error = []
-    # Initial guesses
-    A = [1.0]
-    B = [1.0]
-    # plt.plot(x1, p)
-    # plt.show()
+# Equilibrium Relation (A12 and A21 are the unknowns)
+# p = x1*exp(A12*(A21*x2/(A12*x1+A21*x2))**2)*pw + x2*exp(A21*(A12*x1/(A12*x1 + A21*x2))**2)*pd
+# Use gradient descent to calculate A12 and A21 given the measured data
 
-    # Calculate p with initial guess parameters
-    for i in range(len(x1)):
-        p.append(x1[i]*exp(A*(B*x2[i]/(A*x1[i]+B*x2[i]))**2)*pw
-                 + x2[i]*exp(B*(A*x1[i]/(A*x1[i] + B*x2[i]))**2)*pd)
-        # print(p[i])
+# Antoine Equation
+T = 20
+a1_w = 8.07131
+a2_w = 1730.63
+a3_w = 233.426
+a1_d = 7.43155
+a2_d = 1554.679
+a3_d = 240.337
+pw = 10**(a1_w - (a2_w/(T+a3_w)))
+pd = 10**(a1_d - (a2_d/(T+a3_d)))
 
-    # Calculate each error for initial parameter guesses
-    for i in range(len(x1)):
-        p.append(x1[i]*exp(A*(B*x2[i]/(A*x1[i]+B*x2[i]))**2)*pw
-                 + x2[i]*exp(B*(A*x1[i]/(A*x1[i] + B*x2[i]))**2)*pd)
-        error.append(-1*(p_measured[i] - p[i])**2)
-
-    def partial_A(A, B): return 17.4732520845971*(-2*A*B**2/(A + B)**3 + B**2/(A + B)**2)*sym.exp(A*B
-                                                                                                  ** 2/(A + B)**2) + 28.8240995274052*(-2*A**2*B/(A + B)**3 + 2*A*B/(A + B)**2)*sym.exp(A**2*B/(A + B)**2)
-
-    def partial_B(A, B): return 17.4732520845971*(-2*A*B**2/(A + B)**3 + 2*A*B/(A + B)**2)*sym.exp(A*B
-                                                                                                   ** 2/(A + B)**2) + 28.8240995274052*(-2*A**2*B/(A + B)**3 + A**2/(A + B)**2)*sym.exp(A**2*B/(A + B)**2)
-
-    # Gradient Descent
-    a = 0.05  # Learning rate
-    k = 0  # Counter
-    eps = 10**-3  # Acceptable error
-    # Calculate initial gradient and error using initial guess
-    gradient = [partial_A(A[0], B[0]), partial_B(A[0], B[0])]
-    error = la.norm(gradient)
-    print(error)
-
-    while error > eps:
-        # Update A and B
-        A.append(A[k] - a*partial_A(A[k], B[k]))
-        B.append(B[k] - a*partial_B(A[k], B[k]))
-
-        # Update gradient using updated parameters
-        gradient = [partial_A(A[k], B[k]), partial_B(A[k], B[k])]
-        error = la.norm(gradient)
-
-        # Calculate new p
-        # x1[i]*exp(A*(B*x2[i]/(A*x1[i]+B*x2[i]))**2)*pw + x2[i]*exp(B*(A*x1[i]/(A*x1[i] + B*x2[i]))**2)*pd
-
-        # Calculate new error using new p and corresponding p_measured
-        error = (p_measured[i] - p[i])**2
-        k += 1
-        print(k)
-
-    def problem_II():
-        pass
+# Measured Data
+x1 = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+p_measured = [28.1, 34.4, 36.7, 36.9, 36.8, 36.7, 36.5, 35.4, 32.9, 27.7, 17.5]
+x2 = []
+for i in range(len(x1)):
+    x2.append(round(1 - x1[i], 2))
 
 
-def main():
-    problem_I()
-    # problemII()
 
+# Here is a code for gradient descent without line search
+# Initial guesses for A12 and A21, respectively
+g = Variable(t.tensor([1.0, 1.0]), requires_grad=True)
 
-main()
+# Fix the step size
+a = 0.01
+
+# Start gradient descent
+# Termination Criterion: If norm of gradient is larger than a certain error, then continue...
+for i in range(1000):  # TODO: change the termination criterion
+    p = x1[0]*t.exp(g[0]*(g[1]*x2[0]/(g[0]*x1[0]+g[1]*x2[0]))**2)*pw + x2[0]*t.exp(g[1]*(g[0]*x1[0]/(g[0]*x1[0] + g[1]*x2[0]))**2)*pd
+    loss = (p - p_measured[0])**2
+    loss.backward()
+
+    # no_grad() specifies that the operations within this context are not part of the computational graph, i.e., we don't need the gradient descent algorithm itself to be differentiable with respect to x
+    with t.no_grad():
+        g -= a * g.grad
+
+        # need to clear the gradient at every step, or otherwise it will accumulate...
+        g.grad.zero_()
+
+print(g.data.numpy())
+print(loss.data.numpy())
