@@ -1,4 +1,4 @@
-# Project I - Rocket Landing
+# overhead
 
 import logging
 import math
@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 logger = logging.getLogger(__name__)
 
 
-############################################################################
 # environment parameters
 FRAME_TIME = 0.1  # time interval
 GRAVITY_ACCEL = 0.12  # gravity constant
@@ -25,7 +24,6 @@ BOOST_ACCEL = 0.18  # thrust constant
 # PLATFORM_HEIGHT = 0.06  # landing platform height
 # ROTATION_ACCEL = 20  # rotation constant
 
-############################################################################
 # define system dynamics
 # Notes:
 # 0. You only need to modify the "forward" function
@@ -40,6 +38,7 @@ class Dynamics(nn.Module):
 
     @staticmethod
     def forward(state, action):
+
 
         """
         action: thrust or no thrust
@@ -69,7 +68,6 @@ class Dynamics(nn.Module):
 
         return state
 
-############################################################################
 # Demonstrate the inplace operation issue
 
 class Dynamics(nn.Module):
@@ -85,7 +83,6 @@ class Dynamics(nn.Module):
         state[0] = y
         state[1] = y_dot
         """
-
         # Update velocity using element-wise operation. This leads to an error from PyTorch.
         state[1] = state[1] + GRAVITY_ACCEL * FRAME_TIME - BOOST_ACCEL * FRAME_TIME * action
 
@@ -96,7 +93,6 @@ class Dynamics(nn.Module):
 
         return state
 
-############################################################################
 # a deterministic controller
 # Note:
 # 0. You only need to change the network architecture in "__init__"
@@ -107,11 +103,13 @@ class Dynamics(nn.Module):
 class Controller(nn.Module):
 
     def __init__(self, dim_input, dim_hidden, dim_output):
+
         """
         dim_input: # of system states
         dim_output: # of actions
         dim_hidden: up to you
         """
+
         super(Controller, self).__init__()
         self.network = nn.Sequential(
             nn.Linear(dim_input, dim_hidden),
@@ -125,7 +123,6 @@ class Controller(nn.Module):
         action = self.network(state)
         return action
 
-############################################################################
 # the simulator that rolls out x(1), x(2), ..., x(T)
 # Note:
 # 0. Need to change "initialize_state" to optimize the controller over a distribution of initial states
@@ -160,7 +157,6 @@ class Simulation(nn.Module):
     def error(self, state):
         return state[0]**2 + state[1]**2
 
-############################################################################
 # set up the optimizer
 # Note:
 # 0. LBFGS is a good choice if you don't have a large batch size (i.e., a lot of initial states to consider simultaneously)
@@ -197,7 +193,6 @@ class Optimize:
         plt.plot(x, y)
         plt.show()
 
-############################################################################
 # Now it's time to run the code!
 
 T = 100  # number of time steps
