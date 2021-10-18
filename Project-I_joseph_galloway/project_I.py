@@ -71,7 +71,7 @@ class Dynamics(nn.Module):
 
 ############################################################################
 # Demonstrate the inplace operation issue
-
+"""
 class Dynamics(nn.Module):
 
     def __init__(self):
@@ -80,11 +80,11 @@ class Dynamics(nn.Module):
     @staticmethod
     def forward(state, action):
 
-        """
+
         action: thrust or no thrust
         state[0] = y
         state[1] = y_dot
-        """
+
 
         # Update velocity using element-wise operation. This leads to an error from PyTorch.
         state[1] = state[1] + GRAVITY_ACCEL * FRAME_TIME - BOOST_ACCEL * FRAME_TIME * action
@@ -95,7 +95,7 @@ class Dynamics(nn.Module):
         state = t.matmul(step_mat, state)
 
         return state
-
+"""
 ############################################################################
 # a deterministic controller
 # Note:
