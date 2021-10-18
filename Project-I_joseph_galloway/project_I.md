@@ -23,3 +23,6 @@ The control inputs of the rocket are the acceleration, a(t), and the angular acc
 When the angle of the rocket (theta) equals zero then the rocket is facing upright. Theta is positive when the angle is counter-clockwise from zero and negative when the angle is clockwise from zero. <br>
 
 The optimization problem is formulated as the following:
+
+
+# Analysis of the Results
