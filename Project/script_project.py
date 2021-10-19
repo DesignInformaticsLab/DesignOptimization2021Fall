@@ -21,12 +21,19 @@ BOOST_ACCEL = 0.18  # thrust constant
 DRAG_COEFF = 0.25 # Drag coefficient
 S = 1 # Surface Area
 RHO = 1.225 # Air Density at sea level
-
+RADIUS = 1
 
 # # the following parameters are not being used in the sample code
 # PLATFORM_WIDTH = 0.25  # landing platform width
 # PLATFORM_HEIGHT = 0.06  # landing platform height
 # ROTATION_ACCEL = 20  # rotation constant
+
+# define system dynamics
+# Notes: 
+# 0. You only need to modify the "forward" function
+# 1. All variables in "forward" need to be PyTorch tensors.
+# 2. All math operations in "forward" has to be differentiable, e.g., default PyTorch functions.
+# 3. Do not use inplace operations, e.g., x += 1. Please see the following section for an example that does not work.
 
 # define system dynamics
 # Notes: 
@@ -49,28 +56,28 @@ class Dynamics(nn.Module):
     def forward(state, action):
         """
         action: thrust or no thrust
-        state[0] = y
-        state[1] = y_dot
+        state[0] = x_h
+        state[1] = x_h_dot
+        state[2] = x_v
+        state[3] = x_v_dot
+        state[4] = fpa
+        state[5] = fpa_dot
         """
-        # Apply gravity
-        # Note: Here gravity is used to change velocity which is the second element of the state vector
-        # Normally, we would do x[1] = x[1] + gravity * delta_time
-        # but this is not allowed in PyTorch since it overwrites one variable (x[1]) that is part of the computational graph to be differentiated.
-        # Therefore, I define a tensor dx = [0., gravity * delta_time], and do x = x + dx. This is allowed... 
-        delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME]) 
-        delta_state_drag = t.tensor([0., -0.5*RHO*S*DRAG_COEFF*(state.detach().clone()[1]**2)])
-        # Thrust
-        # Note: Same reason as above. Need a 2-by-1 tensor.
-        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -1.]) * action
-        # Update velocity
-        # Update state
-        # Note: Same as above. Use operators on matrices/tensors as much as possible. Do not use element-wise operators as they are considered inplace.
-        
-        step_mat = t.tensor([[1., FRAME_TIME],
-                            [0., 1.]])
+        vertical_component_velocity = (-0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach().clone()[3]**2))*t.sin(state.detach().clone()[4]) + (GRAVITY_ACCEL * FRAME_TIME)
+        delta_state_vertical = t.tensor([0., 0., 0., vertical_component_velocity, 0., vertical_component_velocity/RADIUS])
+        horizontal_component_velocity = ((-0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach().clone()[1]**2))*t.cos(state.detach().clone()[4]))
+        delta_state_horizontal =  t.tensor([0., horizontal_component_velocity, 0., 0., 0., 0.])
+        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -t.cos(state.detach().clone()[4]), 0., -t.sin(state.detach().clone()[4]), 0., (-t.sin(state.detach().clone()[4]))/RADIUS]) * action
+        step_mat = t.tensor([[1., FRAME_TIME, 0., 0., 0., 0.],
+                             [0., 1., 0., 0., 0., 0.],
+                             [0., 0., 1., FRAME_TIME, 0., 0.],
+                             [0., 0., 0., 1., 0., 0.],
+                             [0., 0., 0., 0., 1., FRAME_TIME],
+                             [0., 0., 0., 0., 0., 1.]
+                            ])
+
         state = t.matmul(step_mat, state)
-        # state = state + delta_state + delta_state_gravity
-        state = state + delta_state + delta_state_gravity + delta_state_drag
+        state = state + delta_state_horizontal + delta_state_vertical + delta_state
     
         return state
 # a deterministic controller
@@ -129,7 +136,7 @@ class Simulation(nn.Module):
 
     @staticmethod
     def initialize_state():
-        state = [1., 0.]  # TODO: need batch of initial states
+        state = [1., 0., 1., 0., 0., 0.]  # TODO: need batch of initial states
         return t.tensor(state, requires_grad=False).float()
 
     def error(self, state):
@@ -176,11 +183,11 @@ class Optimize:
 # Now it's time to run the code!
 
 T = 100  # number of time steps
-dim_input = 2  # state space dimensions
+dim_input = 6  # state space dimensions
 dim_hidden = 6  # latent dimensions
 dim_output = 1  # action space dimensions
 d = Dynamics()  # define dynamics
 c = Controller(dim_input, dim_hidden, dim_output)  # define controller
 s = Simulation(c, d, T)  # define simulation
 o = Optimize(s)  # define optimizer
-o.train(1)  # solve the optimization problem
+o.train(2)  # solve the optimization problem
