@@ -13,17 +13,20 @@ import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
-
 ############################################################################
 # environment parameters
+
 FRAME_TIME = 0.1  # time interval
 GRAVITY_ACCEL = 0.12  # gravity constant
 BOOST_ACCEL = 0.18  # thrust constant
+ROTATION_ACCEL = 0.2  # rotation constant (ADDED)
+LEFT_SIDE_BOOST_ACCEL = 0.8  # side thrust constant (ADDED)
+# Booster accelerations must be greater than accelerations working against rocket
+
 
 # # the following parameters are not being used in the sample code
 # PLATFORM_WIDTH = 0.25  # landing platform width
 # PLATFORM_HEIGHT = 0.06  # landing platform height
-# ROTATION_ACCEL = 20  # rotation constant
 
 ############################################################################
 # define system dynamics
@@ -42,9 +45,12 @@ class Dynamics(nn.Module):
     def forward(state, action):
 
         """
-        action: thrust or no thrust
+        action: thrust or no thrust (action[1])
+        action_left: left side thrust or no left side thrust (action[0])
         state[0] = y
         state[1] = y_dot
+        state[2] = theta (ADDED)
+        state[3] = theta_dot (ADDED)
         """
 
         # Apply gravity
@@ -52,50 +58,48 @@ class Dynamics(nn.Module):
         # Normally, we would do x[1] = x[1] + gravity * delta_time
         # but this is not allowed in PyTorch since it overwrites one variable (x[1]) that is part of the computational graph to be differentiated.
         # Therefore, I define a tensor dx = [0., gravity * delta_time], and do x = x + dx. This is allowed...
-        delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME])
+        #delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME])
+        delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME, 0, 0]) # (ADDED)
 
         # Thrust
         # Note: Same reason as above. Need a 2-by-1 tensor.
-        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -1.]) * action
+        # The action affects how much the booster acceleration affects the rocket's velocity
+        #delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -1.]) * action[1]
+        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -1., 0., 0.]) * action[1] # (ADDED)
+
+        #"""
+        # Apply rotation acceleration
+        # Note: Here the rotation acceleration is used to change the angular velocity which is the fourth element of the state vector
+        # The angular velocity applied makes the rocket rotate counter clockwise
+        delta_state_rotation = t.tensor([0., 0, 0, ROTATION_ACCEL* FRAME_TIME]) # (ADDED)
+
+        # Side Thrust
+        # Note: Same reason as above. Need a 2-by-1 tensor.
+        # The action affects how much the side booster acceleration affects the rocket's angular velocity
+        # This action applies a clockwise rotation on the rocket
+        delta_state_angular = LEFT_SIDE_BOOST_ACCEL * FRAME_TIME * t.tensor([0., 0, 0, -1.]) * action[0] # (ADDED)
+        #"""
 
         # Update velocity
-        state = state + delta_state + delta_state_gravity
+        #state = state + delta_state + delta_state_gravity
+        state = state + delta_state + delta_state_gravity + delta_state_rotation + delta_state_angular # (ADDED)
+
 
         # Update state
         # Note: Same as above. Use operators on matrices/tensors as much as possible. Do not use element-wise operators as they are considered inplace.
-        step_mat = t.tensor([[1., FRAME_TIME],
-                            [0., 1.]])
-        state = t.matmul(step_mat, state)
+        #step_mat = t.tensor([[1., FRAME_TIME],
+        #                    [0., 1.]])
+        #"""
+        step_mat = t.tensor([[1., FRAME_TIME, 0., 0.],
+                            [0., 1., 0., 0.],
+                            [0., 0., 1., FRAME_TIME],
+                            [0., 0., 0., 1.]]) # (ADDED)
+        #"""
+        #state = t.matmul(step_mat, state)  # Multiplies 2x2 step_mat with 2x1 state matrix
+        state = t.matmul(step_mat, state)  # Multiplies 4x4 step_mat with 4x1 state matrix (ADDED)
 
         return state
 
-############################################################################
-# Demonstrate the inplace operation issue
-"""
-class Dynamics(nn.Module):
-
-    def __init__(self):
-        super(Dynamics, self).__init__()
-
-    @staticmethod
-    def forward(state, action):
-
-
-        action: thrust or no thrust
-        state[0] = y
-        state[1] = y_dot
-
-
-        # Update velocity using element-wise operation. This leads to an error from PyTorch.
-        state[1] = state[1] + GRAVITY_ACCEL * FRAME_TIME - BOOST_ACCEL * FRAME_TIME * action
-
-        # Update state
-        step_mat = t.tensor([[1., FRAME_TIME],
-                            [0., 1.]])
-        state = t.matmul(step_mat, state)
-
-        return state
-"""
 ############################################################################
 # a deterministic controller
 # Note:
@@ -123,6 +127,7 @@ class Controller(nn.Module):
 
     def forward(self, state):
         action = self.network(state)
+        #print(action[1])
         return action
 
 ############################################################################
@@ -154,11 +159,13 @@ class Simulation(nn.Module):
 
     @staticmethod
     def initialize_state():
-        state = [1., 0.]  # TODO: need batch of initial states
+        #state = [1., 0.]
+        state = [1., 0., -1., 0.]  # Initial state values (ADDED)
         return t.tensor(state, requires_grad=False).float()
 
     def error(self, state):
-        return state[0]**2 + state[1]**2
+        #return state[0]**2 + state[1]**2
+        return state[0]**2 + state[1]**2 + state[2]**2 + state[3]**2 # (ADDED)
 
 ############################################################################
 # set up the optimizer
@@ -194,16 +201,34 @@ class Optimize:
         data = np.array([self.simulation.state_trajectory[i].detach().numpy() for i in range(self.simulation.T)])
         x = data[:, 0]
         y = data[:, 1]
+        theta = data[:, 2] # (ADDED)
+        theta_dot = data[:, 3] # (ADDED)
+
+        plt.figure()
+        plt.subplot(221)
         plt.plot(x, y)
+        plt.xlabel('Distance')
+        plt.ylabel('Velocity')
+        plt.title('Velocity vs. Distance')
+
+        plt.subplot(222)
+        plt.plot(theta, theta_dot)
+        plt.xlabel('Angle')
+        plt.ylabel('Angular Velocity')
+        plt.title('Angular Velocity vs. Angle')
+        plt.tight_layout()
+        #print(data[-1, 2])
         plt.show()
 
 ############################################################################
 # Now it's time to run the code!
 
 T = 100  # number of time steps
-dim_input = 2  # state space dimensions
-dim_hidden = 6  # latent dimensions
-dim_output = 1  # action space dimensions
+#dim_input = 2  # state space dimensions
+dim_input = 4  # state space dimensions (Distance, Velocity, Angle, Angular Velocity) (ADDED)
+dim_hidden = 12  # latent dimensions
+#dim_output = 1  # action space dimensions
+dim_output = 2  # action space dimensions (Acceleration, Angular Acceleration) (ADDED)
 d = Dynamics()  # define dynamics
 c = Controller(dim_input, dim_hidden, dim_output)  # define controller
 s = Simulation(c, d, T)  # define simulation
