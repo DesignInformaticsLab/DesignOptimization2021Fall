@@ -1,6 +1,5 @@
 ---
-author:
-- Joseph D. Galloway II
+author: Joseph D. Galloway II
 date: October 20th, 2021
 title: "Project I: Rocket Landing"
 ---
@@ -15,42 +14,60 @@ problem formulation:
 The rocket state is represented by the rocket's distance to the ground,
 d(t), its velocity, v(t), its orientation, $\theta$(t), and its angular
 velocity, $\dot{\theta}$(t), i.e.
-$x(t) = [d(t), v(t), \theta(t), \dot{\theta}(t)]^T$ where t specifies
-time. The control input of the rocket is its acceleration a(t) and
-angular acceleration $\ddot{\theta}$(t). The discrete-time dynamics are
-the following: $$d(t + 1) = d(t) + v(t)\Delta{t}$$
-$$v(t + 1) = v(t) + a(t)\Delta{t}$$
-$$\theta(t + 1) = \theta(t) + \dot{\theta}(t)\Delta{t}$$
-$$\dot{\theta}(t + 1) = \dot{\theta}(t) + \ddot{\theta}(t)\Delta{t}$$
+$x(t) = \lbrack d(t),v(t),\theta(t),\dot{\theta}(t)\rbrack^{T}$ where t
+specifies time. The control input of the rocket is its acceleration a(t)
+and angular acceleration $\ddot{\theta}$(t). The discrete-time dynamics
+are the following:
 
-where $\Delta{t}$ is a time interval. Let the closed-loop controller be
-the following: $$a_1(t) = f_\alpha(x(t))$$ $$a_2(t) = f_\alpha(x(t))$$
+$$d(t + 1) = d(t) + v(t)\Delta t$$
 
-where $f_\alpha(*)$ is a neural network with parameters $\alpha$, which
-are to be determined through optimization. $a_1$(t) controls the linear
-motion of the rocket while $a_2$(t) controls the rocket's rotation.
+$$v(t + 1) = v(t) + a(t)\Delta t$$
+
+$$\theta(t + 1) = \theta(t) + \dot{\theta}(t)\Delta t$$
+
+$$\dot{\theta}(t + 1) = \dot{\theta}(t) + \ddot{\theta}(t)\Delta t$$
+
+where $\Delta t$ is a time interval. Let the closed-loop controller be
+the following:
+
+$$a_{1}(t) = f_{\alpha}(x(t))$$
+
+$$a_{2}(t) = f_{\alpha}(x(t))$$
+
+where $f_{\alpha}(*)$ is a neural network with parameters $\alpha$,
+which are to be determined through optimization. $a_{1}$(t) controls the
+linear motion of the rocket while $a_{2}$(t) controls the rocket's
+rotation.
 
 For each time step, we assign a loss as a function of the control inputs
-and the state: $l(x(t), a_1(t), a_2(t))$. Let
-$l(x(t), a_1(t), a_2(t)) = 0$ for all t = 1, \..., T - 1, where T is the
-final step, and
-$l(x(T), a_1(T), a_2(T)) = ||x(T)||^2 = d(T)^2 + v(T)^2 + \theta(T)^2 + \dot{\theta}(T)^2$.
+and the state: $l(x(t),a_{1}(t),a_{2}(t))$. Let
+$l(x(t),a_{1}(t),a_{2}(t)) = 0$ for all t = 1, \..., T - 1, where T is
+the final step, and
+$l(x(T),a_{1}(T),a_{2}(T)) = ||x(T)||^{2} = d(T)^{2} + v(T)^{2} + \theta(T)^{2} + \dot{\theta}(T)^{2}$.
 This loss encourages the rocket to reach $d(T) = 0$, $v(T) = 0$,
 $\theta(T) = 0$, and $\dot{\theta}(T) = 0$, which are proper landing
 conditions.
 
 The optimization problem is now formulated as
-$$min_\alpha \quad ||x(T)||^2$$ $$d(t + 1) = d(t) + v(t)\Delta{t}$$
-$$v(t + 1) = v(t) + a(t)\Delta{t}$$
-$$\theta(t + 1) = \theta(t) + \dot{\theta}(t)\Delta{t}$$
-$$\dot{\theta}(t + 1) = \dot{\theta}(t) + \ddot{\theta}(t)\Delta{t}$$
-$$a_1(t) = f_\alpha(x(t)), ~\forall \quad t = 1, ..., T-1$$
-$$a_2(t) = f_\alpha(x(t)), ~\forall \quad t = 1, ..., T-1$$
+
+$$min_{\alpha}\quad||x(T)||^{2}$$
+
+$$d(t + 1) = d(t) + v(t)\Delta t$$
+
+$$v(t + 1) = v(t) + a(t)\Delta t$$
+
+$$\theta(t + 1) = \theta(t) + \dot{\theta}(t)\Delta t$$
+
+$$\dot{\theta}(t + 1) = \dot{\theta}(t) + \ddot{\theta}(t)\Delta t$$
+
+$$a_{1}(t) = f_{\alpha}(x(t)),\ \forall\quad t = 1,...,T - 1$$
+
+$$a_{2}(t) = f_{\alpha}(x(t)),\ \forall\quad t = 1,...,T - 1$$
 
 While this problem is constrained, it is easy to see that the objective
-function can be expressed as a function of $x(T-1)$ and $a_1(T-1)$ and
-$a_2(T-1)$. Thus it is essentially an unconstrained problem with respect
-to $\alpha$.
+function can be expressed as a function of $x(T - 1)$ and $a_{1}(T - 1)$
+and $a_{2}(T - 1)$. Thus it is essentially an unconstrained problem with
+respect to $\alpha$.
 
 The following assumptions are made:
 
@@ -96,7 +113,7 @@ The following assumptions are made:
 # Analysis of the Results
 
 The initial states of the system are the following: $d(t) = 1$,
-$v(t) = 0$, $\theta(t) = -1$, and $\dot{\theta}(t) = 0$. These initial
+$v(t) = 0$, $\theta(t) = - 1$, and $\dot{\theta}(t) = 0$. These initial
 states mean the following:
 
 1.  $d(t) = 1$ means the rocket is initially at a distance of 1 above
@@ -105,7 +122,7 @@ states mean the following:
 2.  $v(t) = 0$ means the rocket is initially at the apex of its
     trajectory and is beginning its descent.
 
-3.  $\theta(t) = -1$ means the rocket is initially at angle of -1
+3.  $\theta(t) = - 1$ means the rocket is initially at angle of -1
     clockwise with respect to its upright axis.
 
 4.  $\dot{\theta}(t) = 0$ means the rocket is initially not rotating.
@@ -114,7 +131,11 @@ The final results show that the rocket ended upright ($\theta(T) = 0$)
 on the ground ($d(T) = 0$) with no linear velocity ($v(T) = 0$) and no
 angular velocity ($\dot{\theta}(T) = 0$). These conditions are met
 because the loss function equals zero.
-$l(x(T), a_1(T), a_2(T)) = ||x(T)||^2 = d(T)^2 + v(T)^2 + \theta(T)^2 + \dot{\theta}(T)^2 = 0$.
+$l(x(T),a_{1}(T),a_{2}(T)) = ||x(T)||^{2} = d(T)^{2} + v(T)^{2} + \theta(T)^{2} + \dot{\theta}(T)^{2} = 0$.
 The optimizer reached these results in 40 iterations.
 
-![Final iteration of the system](Images/final.png)
+![Final iteration of the
+system](media/rId21.png){width="4.536841644794401in"
+height="1.9789468503937009in"}
+
+Final iteration of the system
