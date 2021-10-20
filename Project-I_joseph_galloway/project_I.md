@@ -1,4 +1,5 @@
-# **Project I**
-
-Author: Joseph D. Galloway II <br>
-Course: Design Optimization (ME 598)
+![One](Images/one.png)
+![Two](Images/two.png)
+![Three](Images/three.png)
+![Four](Images/four.png)
+![Five](Images/five.png)
