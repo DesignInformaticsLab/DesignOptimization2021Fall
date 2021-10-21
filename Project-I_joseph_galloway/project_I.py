@@ -1,5 +1,7 @@
 # Project I - Rocket Landing
 
+# overhead
+
 import logging
 import math
 import random
@@ -11,17 +13,17 @@ from torch import optim
 from torch.nn import utils
 import matplotlib.pyplot as plt
 
+
 logger = logging.getLogger(__name__)
 
 ############################################################################
 # environment parameters
 
 FRAME_TIME = 0.1  # time interval
-GRAVITY_ACCEL = 0.12  # gravity constant
-BOOST_ACCEL = 0.18  # thrust constant
-ROTATION_ACCEL = 0.2  # rotation constant (ADDED)
-LEFT_SIDE_BOOST_ACCEL = 0.8  # side thrust constant (ADDED)
-# Booster accelerations must be greater than accelerations working against rocket
+GRAVITY_ACCEL = 0.12  # gravity constant  km/s^2
+BOOST_ACCEL = 0.18  # thrust constant  km/s^2
+ROTATION_ACCEL = 0.2  # rotation constant  km/s^2 (ADDED)
+LEFT_SIDE_BOOST_ACCEL = 0.8  # side thrust constant  km/s^2 (ADDED)
 
 
 # # the following parameters are not being used in the sample code
@@ -57,26 +59,28 @@ class Dynamics(nn.Module):
         # Note: Here gravity is used to change velocity which is the second element of the state vector
         # Normally, we would do x[1] = x[1] + gravity * delta_time
         # but this is not allowed in PyTorch since it overwrites one variable (x[1]) that is part of the computational graph to be differentiated.
-        # Therefore, I define a tensor dx = [0., gravity * delta_time], and do x = x + dx. This is allowed...
-        #delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME])
-        delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME, 0, 0]) # (ADDED)
+        # Therefore, I define a tensor dx = [0., -gravity * delta_time], and do x = x + dx. This is allowed...
+        #delta_state_gravity = t.tensor([0., -GRAVITY_ACCEL * FRAME_TIME])
+        delta_state_gravity = t.tensor([0., -GRAVITY_ACCEL * FRAME_TIME, 0, 0]) # (ADDED)
 
         # Thrust
         # Note: Same reason as above. Need a 2-by-1 tensor.
         # The action affects how much the booster acceleration affects the rocket's velocity
-        #delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -1.]) * action[1]
-        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -1., 0., 0.]) * action[1] # (ADDED)
+        #delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., 1.]) * action[1]
+        #delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., 1., 0., 0.]) * action[1] # (ADDED)
+        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., 1., 0., 0.]) * action[1] * t.cos(state[2]) # (ADDED)
+        #The cos(theta) portion is because the orientation of the rocket affects how much the BOOST_ACCEL contributes to the linear velocity
 
         #"""
         # Apply rotation acceleration
         # Note: Here the rotation acceleration is used to change the angular velocity which is the fourth element of the state vector
-        # The angular velocity applied makes the rocket rotate counter clockwise
+        # This action makes the rocket rotate counter clockwise
         delta_state_rotation = t.tensor([0., 0, 0, ROTATION_ACCEL* FRAME_TIME]) # (ADDED)
 
         # Side Thrust
         # Note: Same reason as above. Need a 2-by-1 tensor.
         # The action affects how much the side booster acceleration affects the rocket's angular velocity
-        # This action applies a clockwise rotation on the rocket
+        # This action makes the rocket rotate clockwise
         delta_state_angular = LEFT_SIDE_BOOST_ACCEL * FRAME_TIME * t.tensor([0., 0, 0, -1.]) * action[0] # (ADDED)
         #"""
 
@@ -205,19 +209,22 @@ class Optimize:
         theta_dot = data[:, 3] # (ADDED)
 
         plt.figure()
+
         plt.subplot(221)
+        #plt.grid(color='k', linestyle='-', linewidth=0.5)
         plt.plot(x, y)
-        plt.xlabel('Distance')
-        plt.ylabel('Velocity')
+        plt.xlabel('Distance (km)')
+        plt.ylabel('Velocity (km/s)')
         plt.title('Velocity vs. Distance')
 
         plt.subplot(222)
+        #plt.grid(color='k', linestyle='-', linewidth=0.5)
         plt.plot(theta, theta_dot)
-        plt.xlabel('Angle')
-        plt.ylabel('Angular Velocity')
+        plt.xlabel('Angle (rad)')
+        plt.ylabel('Angular Velocity (rad/s)')
         plt.title('Angular Velocity vs. Angle')
         plt.tight_layout()
-        #print(data[-1, 2])
+
         plt.show()
 
 ############################################################################
