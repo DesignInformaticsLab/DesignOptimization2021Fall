@@ -15,15 +15,16 @@ logger = logging.getLogger(__name__)
 
 # environment parameters
 
+# environment parameters
+
 FRAME_TIME = 0.1  # time interval
 GRAVITY_ACCEL = 0.12  # gravity constant
 BOOST_ACCEL = 0.18  # thrust constant
 DRAG_COEFF = 0.25 # Drag coefficient
-S = 1 # Surface Area
-RHO = 1.225 # Air Density at sea level
-RADIUS = 1
-
-# # the following parameters are not being used in the sample code
+S = 0.1 # Surface Area of rocket
+RHO = 0.1225 # Air Density at sea level
+RADIUS = 0.5 # Test w/ unit radius of rotation first...
+FPA_GAIN = 0.25# # the following parameters are not being used in the sample code
 # PLATFORM_WIDTH = 0.25  # landing platform width
 # PLATFORM_HEIGHT = 0.06  # landing platform height
 # ROTATION_ACCEL = 20  # rotation constant
@@ -64,31 +65,22 @@ class Dynamics(nn.Module):
         """
         action[0]: thrust control
         action[1]: fpa control
-        state[0] = x_h
-        state[1] = x_h_dot
-        state[2] = x_v
-        state[3] = x_v_dot
-        state[4] = fpa
-        state[5] = fpa_dot
+        state[0] = x
+        state[1] = x_dot
+        state[2] = fpa
+        state[3] = fpa_dot
         ###
-        fpa_dot(t+1) = fpa_dot(t) + action[1]*dt
+        fpa_dot(t+1) = fpa_dot(t) + (gsin(fpa) - action[1])*dt
         """
-        vertical_component_velocity = (-0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach()[1]**2 + state.detach()[3]**2))*t.cos(state.detach()[4]) + (GRAVITY_ACCEL * FRAME_TIME)
-        delta_state_vertical = t.tensor([0., 0., 0., vertical_component_velocity, 0., vertical_component_velocity/RADIUS])
-        horizontal_component_velocity = ((0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach()[1]**2 + state.detach()[3]**2))*t.sin(state.detach()[4]))
-        delta_state_horizontal =  t.tensor([0., horizontal_component_velocity, 0., 0., 0., 0.])
-        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -t.cos(state.detach()[4]), 0., -t.sin(state.detach()[4]), 0., (-t.sin(state.detach()[4]))/RADIUS]) * action[0]
-        delta_state_fpa = t.tensor([0.,0.,0.,0.,0.,-1.])*FPA_GAIN*FRAME_TIME*action[1]
-        step_mat = t.tensor([[1., FRAME_TIME, 0., 0., 0., 0.],
-                             [0., 1., 0., 0., 0., 0.],
-                             [0., 0., 1., FRAME_TIME, 0., 0.],
-                             [0., 0., 0., 1., 0., 0.],
-                             [0., 0., 0., 0., 1., FRAME_TIME],
-                             [0., 0., 0., 0., 0., 1.]
+        delta_x_dot = (t.tensor([0.,(GRAVITY_ACCEL*t.cos(state.detach()[2])) - (0.5*RHO*(state.detach()[1]**2)*S*DRAG_COEFF) - BOOST_ACCEL*action[0], 0., 0.])*FRAME_TIME) - (t.tensor([0., 1., 0., 0.])*BOOST_ACCEL*action[0]*FRAME_TIME)
+        delta_fpa_dot = (t.tensor([0., 0., 0., (GRAVITY_ACCEL*t.sin(state.detach()[2]))])*FRAME_TIME) - (t.tensor([0., 0., 0., 1.])*FPA_GAIN*action[1]*FRAME_TIME)
+        step_mat = t.tensor([[1., FRAME_TIME, 0., 0.],
+                             [0., 1., 0., 0.,],
+                             [0., 0., 1., FRAME_TIME],
+                             [0., 0., 0., 1.]
                             ])
-
         state = t.matmul(step_mat, state)
-        state = state + delta_state_horizontal + delta_state_vertical + delta_state + delta_state_fpa
+        state = state + delta_x_dot + delta_fpa_dot
     
 
         # delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME]) 
@@ -157,11 +149,11 @@ class Simulation(nn.Module):
 
     @staticmethod
     def initialize_state():
-        state = [1., 0., 1., 0., 0., 0.]  # TODO: need batch of initial states
+        state = [1., 0., 0., 0.]  # TODO: need batch of initial states
         return t.tensor(state, requires_grad=False).float()
 
     def error(self, state):
-        return state[0]**2 + state[1]**2
+        return state[0]**2 + state[1]**2 + state[2]**2 + state[3]**2
 
 
 # set up the optimizer
@@ -192,7 +184,7 @@ class Optimize:
         for epoch in range(epochs):
             loss = self.step()
             print('[%d] loss: %.3f' % (epoch + 1, loss))
-            self.visualize()
+            # self.visualize()
 
     def visualize(self):
         data = np.array([self.simulation.state_trajectory[i].detach().numpy() for i in range(self.simulation.T)])
@@ -204,9 +196,9 @@ class Optimize:
 # Now it's time to run the code!
 
 T = 100  # number of time steps
-dim_input = 6  # state space dimensions
+dim_input = 4  # state space dimensions
 dim_hidden = 6  # latent dimensions
-dim_output = 1  # action space dimensions
+dim_output = 2  # action space dimensions
 d = Dynamics()  # define dynamics
 c = Controller(dim_input, dim_hidden, dim_output)  # define controller
 s = Simulation(c, d, T)  # define simulation
