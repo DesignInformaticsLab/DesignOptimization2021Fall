@@ -49,25 +49,36 @@ RADIUS = 1
 # 2. All math operations in "forward" has to be differentiable, e.g., default PyTorch functions.
 # 3. Do not use inplace operations, e.g., x += 1. Please see the following section for an example that does not work.
 
+# define system dynamics
+# Notes: 
+# 0. You only need to modify the "forward" function
+# 1. All variables in "forward" need to be PyTorch tensors.
+# 2. All math operations in "forward" has to be differentiable, e.g., default PyTorch functions.
+# 3. Do not use inplace operations, e.g., x += 1. Please see the following section for an example that does not work.
+
 class Dynamics(nn.Module):
     def __init__(self):
         super(Dynamics, self).__init__()
     @staticmethod
     def forward(state, action):
         """
-        action: thrust or no thrust
+        action[0]: thrust control
+        action[1]: fpa control
         state[0] = x_h
         state[1] = x_h_dot
         state[2] = x_v
         state[3] = x_v_dot
         state[4] = fpa
         state[5] = fpa_dot
+        ###
+        fpa_dot(t+1) = fpa_dot(t) + action[1]*dt
         """
-        vertical_component_velocity = (-0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach().clone()[3]**2))*t.sin(state.detach().clone()[4]) + (GRAVITY_ACCEL * FRAME_TIME)
+        vertical_component_velocity = (-0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach()[1]**2 + state.detach()[3]**2))*t.cos(state.detach()[4]) + (GRAVITY_ACCEL * FRAME_TIME)
         delta_state_vertical = t.tensor([0., 0., 0., vertical_component_velocity, 0., vertical_component_velocity/RADIUS])
-        horizontal_component_velocity = ((-0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach().clone()[1]**2))*t.cos(state.detach().clone()[4]))
+        horizontal_component_velocity = ((0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach()[1]**2 + state.detach()[3]**2))*t.sin(state.detach()[4]))
         delta_state_horizontal =  t.tensor([0., horizontal_component_velocity, 0., 0., 0., 0.])
-        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -t.cos(state.detach().clone()[4]), 0., -t.sin(state.detach().clone()[4]), 0., (-t.sin(state.detach().clone()[4]))/RADIUS]) * action
+        delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -t.cos(state.detach()[4]), 0., -t.sin(state.detach()[4]), 0., (-t.sin(state.detach()[4]))/RADIUS]) * action[0]
+        delta_state_fpa = t.tensor([0.,0.,0.,0.,0.,-1.])*FPA_GAIN*FRAME_TIME*action[1]
         step_mat = t.tensor([[1., FRAME_TIME, 0., 0., 0., 0.],
                              [0., 1., 0., 0., 0., 0.],
                              [0., 0., 1., FRAME_TIME, 0., 0.],
@@ -77,8 +88,18 @@ class Dynamics(nn.Module):
                             ])
 
         state = t.matmul(step_mat, state)
-        state = state + delta_state_horizontal + delta_state_vertical + delta_state
+        state = state + delta_state_horizontal + delta_state_vertical + delta_state + delta_state_fpa
     
+
+        # delta_state_gravity = t.tensor([0., GRAVITY_ACCEL * FRAME_TIME]) 
+        # delta_state_drag = t.tensor([0., -0.5*RHO*S*DRAG_COEFF*FRAME_TIME*(state.detach().clone()[1]**2)])
+        # delta_state = BOOST_ACCEL * FRAME_TIME * t.tensor([0., -1.]) * action
+
+        # step_mat = t.tensor([[1., FRAME_TIME],
+        #                     [0., 1.]])
+        # state = t.matmul(step_mat, state)
+        # state = state + delta_state + delta_state_gravity + delta_state_drag
+        
         return state
 # a deterministic controller
 # Note:
