@@ -4,16 +4,18 @@ Author: Joseph D. Galloway II <br />
 Course: Design Optimization (ME 598)
 
 
-# Results
-Initial Design
+# Initial Design Results
+Static Structural Test
 ![staticStructural](Images/staticStructural.png)
 ![staticStructural_back](Images/staticStructural_back.png)
+Modal Test
 ![modal](Images/modal.png)
 ![modal_back](Images/modal_back.png)
+Transient Thermal Test
 ![transientThermal](Images/transientThermal.png)
 ![transientThermal_back](Images/transientThermal_back.png)
 
-Final Design
+# Final Design Results
 
 
 # Analysis
