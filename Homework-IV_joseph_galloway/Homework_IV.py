@@ -40,7 +40,8 @@ f_alpha_s2 = []
 phi_alpha_d = []
 phi_alpha_s1 = []
 phi_alpha_s2 = []
-
+s1_o = []
+s2_o = []
 
 
 while norm**2 > eps:
@@ -48,17 +49,12 @@ while norm**2 > eps:
     f_alpha_d.append(d[k] - alpha*df_dd)  # Decision variable portion of f(alpha)
     f_alpha_s1.append(s1[k] + alpha*(np.transpose(np.matmul(np.matmul(np.linalg.inv(dh_ds), dh_dd), np.transpose(df_dd)))))  # State variable portion of f(alpha)
     f_alpha_s2.append(s2[k] + alpha*(np.transpose(np.matmul(np.matmul(np.linalg.inv(dh_ds), dh_dd), np.transpose(df_dd)))))  # State variable portion of f(alpha)
-    print(f_alpha_d)
-    print(f_alpha_s1)
-    print(f_alpha_s2)
-
-    break
-"""
-    phi_alpha_d = f_alpha_d[k]
+    phi_alpha_d = f_alpha_d[k] - alpha*t*(df_dd*np.transpose(df_dd))
     phi_alpha_s1 = f_alpha_s1[k] - alpha*t*(df_dd*np.transpose(df_dd))
     phi_alpha_s2 = f_alpha_s2[k] - alpha*t*(df_dd*np.transpose(df_dd))
 
-    while f_alpha_d[k] > phi_alpha_d and f_alpha_s1[k] > phi_alpha_s1 and f_alpha_s2[k] > phi_alpha_s2:
+    while f_alpha_d[k] > phi_alpha_d and f_alpha_s1[k][0] > phi_alpha_s1[0] and f_alpha_s1[k][1] > phi_alpha_s1[1] \
+    and f_alpha_s2[k][0] > phi_alpha_s2[0] and f_alpha_s2[k][1] > phi_alpha_s2[1]:
         alpha = 2*b
         print(alpha)
         f_alpha_d.append(d[k] - alpha*df_dd)  # Decision variable portion of f(alpha)
@@ -69,18 +65,18 @@ while norm**2 > eps:
         phi_alpha_s1 = f_alpha_s1[k] - alpha*t*(df_dd*np.transpose(df_dd))
         phi_alpha_s2 = f_alpha_s2[k] - alpha*t*(df_dd*np.transpose(df_dd))
 
-
     # Step 4.2 Update decision variable (Similar to gradient descent)
     d.append(d[k] - alpha*df_dd)
 
     # Step 4.3 Update state variables by first calculating an initial guess of where S should be using a
     # linear approximation (New decision variable no longer satifies constraints (h=0), so state variables need to be updated)
-    s_o.append(s[k] + alpha*(np.transpose(np.linalg.inv(dh_ds)*dh_dd*np.transpose(df_dd))))
+    s1_o.append(s1[k] + alpha*(np.transpose(np.linalg.inv(dh_ds)*dh_dd*np.transpose(df_dd))))
+    s2_o.append(s2[k] + alpha*(np.transpose(np.linalg.inv(dh_ds)*dh_dd*np.transpose(df_dd))))
 
     # Step 4.4 Update state variables using the initial guess (Use a solver to iteratively determine what Sk+1 should really be to make h = 0)
     #s.append(solve...)
 
     # Step 4.5 Calculate df_dd and update counter
     #df_dd = solve...
+    #calculate new norm
     k = k + 1
-"""
