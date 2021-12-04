@@ -82,7 +82,7 @@ hold off
 nexttile
 plot(solution.x(1, :), solution.x(2, :))
 grid on
-title('x1 vs. x2')
+title('x2 vs. x1')
 xlabel('x1')
 ylabel('x2')
 
