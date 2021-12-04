@@ -12,16 +12,13 @@ close all; % Close all windows
 %% Optimization settings
 % Here we specify the objective function by giving the function handle to a
 % variable, for example:
-%f = @(x)objective(x); % Objective Function
 f = @(x) x(1)^2+(x(2)-3)^2; % Objective Function
+
 % In the same way, we also provide the gradient of the
 % objective:
-%df = @(x)objectiveg(x); % Gradient of Objective Function
 df = @(x) [2*x(1), 2*(x(2)-3)]; % Gradient of Objective Function [1x2]
 
-%g = @(x)constraint(x); % Constraints
 g = @(x) [x(2)^2-2*x(1); (x(2)-1)^2+5*x(1)-15]; % Constraints [2x1]
-%dg = @(x)constraintg(x); % Gradient of constraints
 dg = @(x) [-2, 2*x(2); 5, 2*(x(2)-1)]; % Gradient of constraints [2x2]
 
 % Note that explicit gradient and Hessian information is only optional.
@@ -52,8 +49,55 @@ solution = mysqp(f, df, g, dg, x0, opt);
 
 %% Report
 %report(solution,f,g);
-disp(solution.x);
-disp(f(solution.x));
+
+for i = 1:length(solution.x)
+    sol(i) = f(solution.x(:, i));  % Store all f(x1, x2) values here
+    z = g(solution.x(:, i));  % Store all g(x1, x2) values here
+    con1(i) = z(1);  % Store g1 constraint here
+    con2(i) = z(2);  % Store g2 constraint here
+end
+
+count = 1:length(solution.x); % Iteration through each x1 and x2
+
+tiledlayout(3, 1)
+nexttile
+plot(count, sol)
+grid on
+title('f(x1, x2) vs. Iterations')
+xlabel('Iterations')
+ylabel('f(x1, x2)')
+
+nexttile
+hold on
+plot(count, sol)
+plot(count, con1)
+plot(count, con2)
+grid on
+legend('Objective Function', 'Constraint Function 1', 'Constraint Function 2')
+title('Objective and Constraint Functions vs. Iterations')
+xlabel('Iterations')
+ylabel('Objective and Constraint Functions')
+hold off
+
+nexttile
+plot(solution.x(1, :), solution.x(2, :))
+grid on
+title('x1 vs. x2')
+xlabel('x1')
+ylabel('x2')
+
+disp("x1 and x2 = ");
+disp(solution.x(:, end));  % The optimum x1 and x2
+
+disp("F(x1, x2) = ");
+disp(sol(end));  % The objective function at x1 and x2
+
+disp("g1(x1, x2) = ");
+disp(con1(end));  % The first constraint function at x1 and x2
+
+disp("g2(x1, x2) = ");
+disp(con2(end));  % The second constraint function at x1 and x2
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
