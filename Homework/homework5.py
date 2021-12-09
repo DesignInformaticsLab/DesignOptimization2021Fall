@@ -122,17 +122,25 @@ def QP(x, f, A, W, h = None, g = None):
             active_set = np.unique(active_set)
     return s, mu
 
-def line_search(f, A, s, w, lam = None, mu = None, h = None, g = None):
+def line_search(f, A, s, w, x, lam = None, mu = None, h = None, g = None):
     t = 0.1
     b = 0.8
     a = 1
     D = s
-    w = np.max(np.abs(mu), 0.5*(w + np.abs(mu)))
+    w = np.maximum(np.abs(mu), 0.5*(w + np.abs(mu)))
     count = 0
     while count < 100:
-        phi_a = objective(x + a*D) + w.transpose(), np.abs(np.min(0, -ineq_constraints(x + a*D)))
-        phi0 = objective(x)
-    return alpha
+        phi_a = objective(x + a*D) + np.dot(w.transpose(),np.abs(np.minimum(0, -ineq_constraints(x + a*D))))
+        phi0 = objective(x) + np.dot(w.transpose(), np.abs(np.minimum(0, -ineq_constraints(x))))
+        dphi0 = np.dot(df(x).transpose(),D) + np.dot(w.transpose(),(np.dot(dg(x),D)*(ineq_constraints(x) > 0)))
+        psi_a = phi0 + t*a*dphi0
+        if phi_a < psi_a:
+            break
+        else:
+            a = a*b
+            count += 1
+
+    return a
 
 
 def BFGS(W, mu_new, x_new, x_old):
@@ -178,8 +186,8 @@ while np.linalg.norm(L_x) > eps:
     L = lagrangian(x, mu)
     L_x = dL(x, mu)
     s, mu_new = QP(x, f, A, W, g = g)
-    # alpha = line_search(f, A, s, w, mu = mu, g = g)
-    alpha = 0.1
+    alpha = line_search(f, A, s, w, x, mu = mu, g = g)
+    # alpha = 0.1
     dx = alpha*s
     x_new = x + dx
     # Hessian update using BFGS
